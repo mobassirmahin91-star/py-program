@@ -73,6 +73,7 @@ class PortScannerGUI:
         # https://docs.python.org/3/library/tkinter.ttk.html#ttk-styling
         self.style = ttk.Style()
         self.style.theme_use('clam')
+        
          # Color palette (Catppuccin Mocha inspired)
         # https://github.com/catppuccin/catppuccin
         self.colors = {
@@ -124,6 +125,7 @@ class PortScannerGUI:
         left_panel = tk.Frame(main_container, bg=self.colors['bg'], width=350)
         left_panel.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
         left_panel.pack_propagate(False)
+
          # Target input section
         # https://docs.python.org/3/library/tkinter.html#tkinter.LabelFrame
         target_frame = tk.LabelFrame(
@@ -167,6 +169,7 @@ class PortScannerGUI:
             fg=self.colors['fg'],
             font=("Helvetica", 10)
         ).pack(anchor=tk.W, padx=10, pady=(5, 5))
+
          # Radio buttons for scan type
         # https://docs.python.org/3/library/tkinter.html#tkinter.Radiobutton
         self.scan_type = tk.StringVar(value="quick")
@@ -250,6 +253,7 @@ class PortScannerGUI:
         )
         self.port_end.grid(row=0, column=3, padx=5)
         self.port_end.insert(0, "1000")
+
          # Start scan button
         # https://docs.python.org/3/library/tkinter.html#tkinter.Button
         self.scan_button = tk.Button(
@@ -298,6 +302,7 @@ class PortScannerGUI:
             font=("Helvetica", 9)
         )
         self.status_label.pack(pady=(0, 10))
+
          # Statistics section
         stats_frame = tk.LabelFrame(
             left_panel,
@@ -323,4 +328,45 @@ class PortScannerGUI:
             state=tk.DISABLED
         )
         self.stats_text.pack(padx=10, pady=10, fill=tk.BOTH)
+
+        # Action buttons (Export and Clear)
+        action_frame = tk.Frame(left_panel, bg=self.colors['bg'])
+        action_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        self.export_button = tk.Button(
+            action_frame,
+            text="💾 Export",
+            command=self.show_export_menu,
+            font=("Helvetica", 10, "bold"),
+            bg=self.colors['low'],
+            fg='#1e1e2e',
+            activebackground='#94e2d5',
+            relief=tk.FLAT,
+            bd=0,
+            padx=10,
+            pady=8,
+            cursor="hand2",
+            state=tk.DISABLED
+        )
+        self.export_button.pack(side=tk.LEFT, expand=True, fill=tk.X, padx=(0, 5))
+        
+        self.clear_button = tk.Button(
+            action_frame,
+            text="🗑️ Clear",
+            command=self.clear_results,
+            font=("Helvetica", 10, "bold"),
+            bg=self.colors['high'],
+            fg='#1e1e2e',
+            activebackground='#f5a97f',
+            relief=tk.FLAT,
+            bd=0,
+            padx=10,
+            pady=8,
+            cursor="hand2"
+        )
+        self.clear_button.pack(side=tk.LEFT, expand=True, fill=tk.X, padx=(5, 0))
+        
+        # Right panel (results)
+        right_panel = tk.Frame(main_container, bg=self.colors['bg'])
+        right_panel.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
