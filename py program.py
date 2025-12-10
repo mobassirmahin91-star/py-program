@@ -167,3 +167,86 @@ class PortScannerGUI:
             fg=self.colors['fg'],
             font=("Helvetica", 10)
         ).pack(anchor=tk.W, padx=10, pady=(5, 5))
+         # Radio buttons for scan type
+        # https://docs.python.org/3/library/tkinter.html#tkinter.Radiobutton
+        self.scan_type = tk.StringVar(value="quick")
+        
+        quick_radio = tk.Radiobutton(
+            target_frame,
+            text="Quick Scan (Common Ports)",
+            variable=self.scan_type,
+            value="quick",
+            bg=self.colors['bg'],
+            fg=self.colors['fg'],
+            selectcolor=self.colors['entry_bg'],
+            activebackground=self.colors['bg'],
+            activeforeground=self.colors['accent'],
+            font=("Helvetica", 9)
+        )
+        quick_radio.pack(anchor=tk.W, padx=20, pady=2)
+        
+        custom_radio = tk.Radiobutton(
+            target_frame,
+            text="Custom Range",
+            variable=self.scan_type,
+            value="custom",
+            bg=self.colors['bg'],
+            fg=self.colors['fg'],
+            selectcolor=self.colors['entry_bg'],
+            activebackground=self.colors['bg'],
+            activeforeground=self.colors['accent'],
+            font=("Helvetica", 9),
+            command=self.toggle_custom_ports
+        )
+        custom_radio.pack(anchor=tk.W, padx=20, pady=2)
+        
+        # Custom port range inputs
+        self.port_range_frame = tk.Frame(target_frame, bg=self.colors['bg'])
+        self.port_range_frame.pack(fill=tk.X, padx=10, pady=(5, 10))
+        
+        port_container = tk.Frame(self.port_range_frame, bg=self.colors['bg'])
+        port_container.pack()
+        
+        tk.Label(
+            port_container,
+            text="From:",
+            bg=self.colors['bg'],
+            fg=self.colors['fg'],
+            font=("Helvetica", 9)
+        ).grid(row=0, column=0, padx=5)
+        
+        self.port_start = tk.Entry(
+            port_container,
+            width=8,
+            font=("Helvetica", 10),
+            bg=self.colors['entry_bg'],
+            fg=self.colors['fg'],
+            insertbackground=self.colors['fg'],
+            relief=tk.FLAT,
+            bd=3,
+            state=tk.DISABLED
+        )
+        self.port_start.grid(row=0, column=1, padx=5)
+        self.port_start.insert(0, "1")
+        
+        tk.Label(
+            port_container,
+            text="To:",
+            bg=self.colors['bg'],
+            fg=self.colors['fg'],
+            font=("Helvetica", 9)
+        ).grid(row=0, column=2, padx=5)
+        
+        self.port_end = tk.Entry(
+            port_container,
+            width=8,
+            font=("Helvetica", 10),
+            bg=self.colors['entry_bg'],
+            fg=self.colors['fg'],
+            insertbackground=self.colors['fg'],
+            relief=tk.FLAT,
+            bd=3,
+            state=tk.DISABLED
+        )
+        self.port_end.grid(row=0, column=3, padx=5)
+        self.port_end.insert(0, "1000")
