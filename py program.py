@@ -555,6 +555,116 @@ class PortScannerGUI:
         
         start_time = datetime.now()
         open_ports = []
+
+         # Scan each port
+        for port in ports:
+            if not self.is_scanning:
+                break
+            
+            try:
+                # Create TCP socket (AF_INET=IPv4, SOCK_STREAM=TCP)
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.settimeout(1)
+                
+                # Attempt connection (returns 0 if open)
+                result = sock.connect_ex((self.target_ip, port))
+                
+                if result == 0:
+                    # Port is open - gather info
+                    service = PORT_INFO.get(port, {}).get("service", "Unknown")
+                    risk = PORT_INFO.get(port, {}).get("risk", "UNKNOWN")
+                    tip = PORT_INFO.get(port, {}).get("tip", "No specific recommendation")
+                    
+                    open_ports.append(port)
+                    result_data = {
+                        "port": port,
+                        "service": service,
+                        "risk": risk,
+                        "tip": tip
+                    }
+                    
+                    self.scan_results.append(result_data)
+                    self.root.after(0, lambda r=result_data: self.add_result_to_tree(r))
+                    self.update_status(f"Found open port: {port} ({service})")
+                
+                sock.close()
+            except Exception as e:
+                pass
+        
+        # Calculate scan duration
+        end_time = datetime.now()
+        duration = (end_time - start_time).total_seconds()
+        
+        self.update_statistics(len(ports), len(open_ports), duration)
+        self.scan_complete()
+    
+    def add_result_to_tree(self, result):
+        """
+        Add single scan result to results table
+        Inserts row with color coding based on risk level
+        """
+        self.results_tree.insert(
+            "",
+            tk.END,
+            values=(result['port'], result['service'], result['risk'], result['tip']),
+            tags=(result['risk'],)
+        )
+    
+    def update_status(self, message):
+        """
+        Update status label (thread-safe using root.after)
+        https://docs.python.org/3/library/tkinter.html#tkinter.Misc.after
+        """
+        self.root.after(0, lambda: self.status_label.config(text=message))
+    
+    def update_statistics(self, total_ports, open_ports, duration):
+        """
+        Update statistics display with scan results
+        Shows target, ports scanned, open ports, duration, and timestamp
+        """
+        def update():
+            self.stats_text.config(state=tk.NORMAL)
+            self.stats_text.delete(1.0, tk.END)
+            
+            stats = f"""
+Target: {self.target_ip}
+Ports Scanned: {total_ports}
+Open Ports: {open_ports}
+Duration: {duration:.2f}s
+Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+            """
+            
+            self.stats_text.insert(1.0, stats.strip())
+            self.stats_text.config(state=tk.DISABLED)
+        
+        self.root.after(0, update)
+    
+    def scan_complete(self):
+        """
+        Handle scan completion
+        Resets UI state and enables export if results exist
+        """
+        self.root.after(0, self._scan_complete_ui)
+    
+    def _scan_complete_ui(self):
+        """
+        Update UI elements after scan completion (runs on main thread)
+        """
+        self.is_scanning = False
+        self.scan_button.config(state=tk.NORMAL, text="🚀 START SCAN")
+        self.progress_bar.stop()
+        self.status_label.config(text="Scan complete!")
+        
+        if self.scan_results:
+            self.export_button.config(state=tk.NORMAL)
+    
+    def search_results(self):
+        """
+        Filter results table based on search query
+        Real-time search triggered by KeyRelease event
+        """
+        search_term = self.search_entry.get().lower()
+    
         
          
         
