@@ -73,3 +73,54 @@ class PortScannerGUI:
         # https://docs.python.org/3/library/tkinter.ttk.html#ttk-styling
         self.style = ttk.Style()
         self.style.theme_use('clam')
+         # Color palette (Catppuccin Mocha inspired)
+        # https://github.com/catppuccin/catppuccin
+        self.colors = {
+            'bg': '#1e1e2e',
+            'fg': '#cdd6f4',
+            'accent': '#89b4fa',
+            'critical': '#f38ba8',
+            'high': '#fab387',
+            'medium': '#f9e2af',
+            'low': '#a6e3a1',
+            'button': '#89b4fa',
+            'entry_bg': '#313244',
+            'text_bg': '#181825'
+        }
+        
+        self.root.configure(bg=self.colors['bg'])
+        
+        # Initialize scanner state variables
+        self.scan_results = []
+        self.is_scanning = False
+        self.target_ip = None
+        
+        self.create_widgets()
+    def create_widgets(self):
+        """
+        Create and layout all GUI widgets
+        Builds header, left panel (controls), and right panel (results)
+        https://docs.python.org/3/library/tkinter.html#tkinter.Frame
+        """
+        
+        # Header section
+        header_frame = tk.Frame(self.root, bg=self.colors['accent'], height=80)
+        header_frame.pack(fill=tk.X, pady=(0, 10))
+        header_frame.pack_propagate(False)
+        
+        title_label = tk.Label(
+            header_frame,
+            text="🔒 PORT SCANNER & VULNERABILITY CHECKER",
+            font=("Helvetica", 20, "bold"),
+            bg=self.colors['accent'],
+            fg='#1e1e2e'
+        )
+        title_label.pack(pady=20)
+        
+        # Main container
+        main_container = tk.Frame(self.root, bg=self.colors['bg'])
+        main_container.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
+        # Left panel (controls)
+        left_panel = tk.Frame(main_container, bg=self.colors['bg'], width=350)
+        left_panel.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
+        left_panel.pack_propagate(False)
