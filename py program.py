@@ -200,7 +200,7 @@ class PortScannerGUI:
         )
         custom_radio.pack(anchor=tk.W, padx=20, pady=2)
         
-        # Custom port range inputs
+        #  Custom port range inputs
         self.port_range_frame = tk.Frame(target_frame, bg=self.colors['bg'])
         self.port_range_frame.pack(fill=tk.X, padx=10, pady=(5, 10))
         
@@ -250,3 +250,51 @@ class PortScannerGUI:
         )
         self.port_end.grid(row=0, column=3, padx=5)
         self.port_end.insert(0, "1000")
+         # Start scan button
+        # https://docs.python.org/3/library/tkinter.html#tkinter.Button
+        self.scan_button = tk.Button(
+            left_panel,
+            text="🚀 START SCAN",
+            command=self.start_scan,
+            font=("Helvetica", 12, "bold"),
+            bg=self.colors['button'],
+            fg='#1e1e2e',
+            activebackground='#74c7ec',
+            activeforeground='#1e1e2e',
+            relief=tk.FLAT,
+            bd=0,
+            padx=20,
+            pady=12,
+            cursor="hand2"
+        )
+        self.scan_button.pack(fill=tk.X, pady=(0, 15))
+        
+        # Progress section
+        progress_frame = tk.LabelFrame(
+            left_panel,
+            text="  Scan Progress  ",
+            font=("Helvetica", 12, "bold"),
+            bg=self.colors['bg'],
+            fg=self.colors['accent'],
+            bd=2,
+            relief=tk.GROOVE
+        )
+        progress_frame.pack(fill=tk.X, pady=(0, 15))
+        
+        # Progress bar widget
+        # https://docs.python.org/3/library/tkinter.ttk.html#progressbar
+        self.progress_bar = ttk.Progressbar(
+            progress_frame,
+            mode='indeterminate',
+            length=300
+        )
+        self.progress_bar.pack(padx=10, pady=10)
+        
+        self.status_label = tk.Label(
+            progress_frame,
+            text="Ready to scan",
+            bg=self.colors['bg'],
+            fg=self.colors['fg'],
+            font=("Helvetica", 9)
+        )
+        self.status_label.pack(pady=(0, 10))
