@@ -124,3 +124,46 @@ class PortScannerGUI:
         left_panel = tk.Frame(main_container, bg=self.colors['bg'], width=350)
         left_panel.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
         left_panel.pack_propagate(False)
+         # Target input section
+        # https://docs.python.org/3/library/tkinter.html#tkinter.LabelFrame
+        target_frame = tk.LabelFrame(
+            left_panel,
+            text="  Target Configuration  ",
+            font=("Helvetica", 12, "bold"),
+            bg=self.colors['bg'],
+            fg=self.colors['accent'],
+            bd=2,
+            relief=tk.GROOVE
+        )
+        target_frame.pack(fill=tk.X, pady=(0, 15))
+        
+        tk.Label(
+            target_frame,
+            text="Target IP/Domain:",
+            bg=self.colors['bg'],
+            fg=self.colors['fg'],
+            font=("Helvetica", 10)
+        ).pack(anchor=tk.W, padx=10, pady=(10, 5))
+        
+        # Entry widget for target input
+        # https://docs.python.org/3/library/tkinter.html#tkinter.Entry
+        self.target_entry = tk.Entry(
+            target_frame,
+            font=("Helvetica", 11),
+            bg=self.colors['entry_bg'],
+            fg=self.colors['fg'],
+            insertbackground=self.colors['fg'],
+            relief=tk.FLAT,
+            bd=5
+        )
+        self.target_entry.pack(fill=tk.X, padx=10, pady=(0, 10))
+        self.target_entry.insert(0, "scanme.nmap.org")  # Safe default target
+        
+        # Scan type selection
+        tk.Label(
+            target_frame,
+            text="Scan Type:",
+            bg=self.colors['bg'],
+            fg=self.colors['fg'],
+            font=("Helvetica", 10)
+        ).pack(anchor=tk.W, padx=10, pady=(5, 5))
