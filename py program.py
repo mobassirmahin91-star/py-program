@@ -73,7 +73,7 @@ class PortScannerGUI:
         # https://docs.python.org/3/library/tkinter.ttk.html#ttk-styling
         self.style = ttk.Style()
         self.style.theme_use('clam')
-        
+
          # Color palette (Catppuccin Mocha inspired)
         # https://github.com/catppuccin/catppuccin
         self.colors = {
@@ -369,4 +369,51 @@ class PortScannerGUI:
         # Right panel (results)
         right_panel = tk.Frame(main_container, bg=self.colors['bg'])
         right_panel.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+         # Search and sort bar
+        search_frame = tk.Frame(right_panel, bg=self.colors['bg'])
+        search_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        tk.Label(
+            search_frame,
+            text="🔍",
+            bg=self.colors['bg'],
+            fg=self.colors['fg'],
+            font=("Helvetica", 14)
+        ).pack(side=tk.LEFT, padx=(0, 5))
+        
+        # Search entry with real-time filtering
+        self.search_entry = tk.Entry(
+            search_frame,
+            font=("Helvetica", 11),
+            bg=self.colors['entry_bg'],
+            fg=self.colors['fg'],
+            insertbackground=self.colors['fg'],
+            relief=tk.FLAT,
+            bd=5
+        )
+        self.search_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 10))
+        self.search_entry.bind('<KeyRelease>', lambda e: self.search_results())
+        
+        tk.Label(
+            search_frame,
+            text="Sort:",
+            bg=self.colors['bg'],
+            fg=self.colors['fg'],
+            font=("Helvetica", 10)
+        ).pack(side=tk.LEFT, padx=(0, 5))
+        
+        # Sort dropdown (Combobox)
+        # https://docs.python.org/3/library/tkinter.ttk.html#combobox
+        self.sort_var = tk.StringVar(value="port")
+        sort_combo = ttk.Combobox(
+            search_frame,
+            textvariable=self.sort_var,
+            values=["port", "service", "risk"],
+            state="readonly",
+            width=10,
+            font=("Helvetica", 10)
+        )
+        sort_combo.pack(side=tk.LEFT)
+        sort_combo.bind('<<ComboboxSelected>>', lambda e: self.sort_results())
+         
         
