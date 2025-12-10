@@ -415,5 +415,146 @@ class PortScannerGUI:
         )
         sort_combo.pack(side=tk.LEFT)
         sort_combo.bind('<<ComboboxSelected>>', lambda e: self.sort_results())
+         # Results table (Treeview)
+        # https://docs.python.org/3/library/tkinter.ttk.html#treeview
+        results_frame = tk.Frame(right_panel, bg=self.colors['bg'])
+        results_frame.pack(fill=tk.BOTH, expand=True)
+        
+        tree_scroll = tk.Scrollbar(results_frame)
+        tree_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        self.results_tree = ttk.Treeview(
+            results_frame,
+            columns=("Port", "Service", "Risk", "Recommendation"),
+            show="headings",
+            yscrollcommand=tree_scroll.set,
+            height=20
+        )
+        
+        tree_scroll.config(command=self.results_tree.yview)
+        
+        # Define column headings and widths
+        self.results_tree.heading("Port", text="Port", anchor=tk.W)
+        self.results_tree.heading("Service", text="Service", anchor=tk.W)
+        self.results_tree.heading("Risk", text="Risk Level", anchor=tk.CENTER)
+        self.results_tree.heading("Recommendation", text="Security Recommendation", anchor=tk.W)
+        
+        self.results_tree.column("Port", width=80, anchor=tk.W)
+        self.results_tree.column("Service", width=120, anchor=tk.W)
+        self.results_tree.column("Risk", width=100, anchor=tk.CENTER)
+        self.results_tree.column("Recommendation", width=400, anchor=tk.W)
+        
+        # Configure treeview styling
+        self.style.configure(
+            "Treeview",
+            background=self.colors['text_bg'],
+            foreground=self.colors['fg'],
+            fieldbackground=self.colors['text_bg'],
+            borderwidth=0,
+            font=("Helvetica", 10)
+        )
+        self.style.configure("Treeview.Heading", font=("Helvetica", 11, "bold"))
+        self.style.map('Treeview', background=[('selected', self.colors['accent'])])
+        
+        # Color tags for risk levels
+        self.results_tree.tag_configure('CRITICAL', background='#3d1e1e', foreground=self.colors['critical'])
+        self.results_tree.tag_configure('HIGH', background='#3d2e1e', foreground=self.colors['high'])
+        self.results_tree.tag_configure('MEDIUM', background='#3d3a1e', foreground=self.colors['medium'])
+        self.results_tree.tag_configure('LOW', background='#1e3d1e', foreground=self.colors['low'])
+        
+        self.results_tree.pack(fill=tk.BOTH, expand=True)
+    
+    def toggle_custom_ports(self):
+        """
+        Enable/disable custom port range input fields based on scan type selection
+        Called when user switches between Quick Scan and Custom Range
+        """
+        if self.scan_type.get() == "custom":
+            self.port_start.config(state=tk.NORMAL)
+            self.port_end.config(state=tk.NORMAL)
+        else:
+            self.port_start.config(state=tk.DISABLED)
+            self.port_end.config(state=tk.DISABLED)
+    
+    def start_scan(self):
+        """
+        Initiate port scanning process
+        Validates input, shows authorization warning, clears old results,
+        and starts scan in separate thread to prevent UI freezing
+        https://docs.python.org/3/library/threading.html
+        """
+        if self.is_scanning:
+            messagebox.showwarning("Scan in Progress", "A scan is already running!")
+            return
+        
+        target = self.target_entry.get().strip()
+        
+        if not target:
+            messagebox.showerror("Error", "Please enter a target IP or domain!")
+            return
+        
+        # Authorization warning (legal compliance)
+        # https://www.law.cornell.edu/uscode/text/18/1030
+        response = messagebox.askyesno(
+            "⚠️ Authorization Required",
+            "Do you have authorization to scan this target?\n\n"
+            "Unauthorized port scanning may be illegal in your jurisdiction.\n"
+            "Only scan systems you own or have explicit permission to test."
+        )
+        
+        if not response:
+            return
+        
+        # Determine ports to scan
+        if self.scan_type.get() == "quick":
+            ports = COMMON_PORTS
+        else:
+            try:
+                start = int(self.port_start.get())
+                end = int(self.port_end.get())
+                if start >= end or start < 1 or end > 65535:
+                    raise ValueError
+                ports = list(range(start, end + 1))
+            except ValueError:
+                messagebox.showerror("Error", "Invalid port range! Using common ports.")
+                ports = COMMON_PORTS
+        
+        # Clear previous results
+        self.scan_results = []
+        for item in self.results_tree.get_children():
+            self.results_tree.delete(item)
+        
+        # Update UI to scanning state
+        self.is_scanning = True
+        self.scan_button.config(state=tk.DISABLED, text="⏳ SCANNING...")
+        self.export_button.config(state=tk.DISABLED)
+        self.progress_bar.start(10)
+        self.status_label.config(text=f"Scanning {target}...")
+        
+        # Start scan in daemon thread
+        scan_thread = threading.Thread(target=self.run_scan, args=(target, ports))
+        scan_thread.daemon = True
+        scan_thread.start()
+    
+    def run_scan(self, target, ports):
+        """
+        Execute port scanning logic (runs in separate thread)
+        Resolves hostname, attempts TCP connections to each port,
+        records open ports, and updates GUI with results
+        https://docs.python.org/3/library/socket.html
+        https://datatracker.ietf.org/doc/html/rfc793
+        """
+        # Resolve hostname to IP
+        try:
+            self.target_ip = socket.gethostbyname(target)
+            self.update_status(f"Resolved {target} to {self.target_ip}")
+        except socket.gaierror:
+            self.root.after(0, lambda: messagebox.showerror("Error", f"Cannot resolve hostname: {target}"))
+            self.scan_complete()
+            return
+        
+        start_time = datetime.now()
+        open_ports = []
+        
          
         
