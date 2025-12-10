@@ -298,3 +298,29 @@ class PortScannerGUI:
             font=("Helvetica", 9)
         )
         self.status_label.pack(pady=(0, 10))
+         # Statistics section
+        stats_frame = tk.LabelFrame(
+            left_panel,
+            text="  Statistics  ",
+            font=("Helvetica", 12, "bold"),
+            bg=self.colors['bg'],
+            fg=self.colors['accent'],
+            bd=2,
+            relief=tk.GROOVE
+        )
+        stats_frame.pack(fill=tk.X, pady=(0, 15))
+        
+        # Text widget for statistics display
+        # https://docs.python.org/3/library/tkinter.html#tkinter.Text
+        self.stats_text = tk.Text(
+            stats_frame,
+            height=8,
+            bg=self.colors['text_bg'],
+            fg=self.colors['fg'],
+            font=("Courier", 9),
+            relief=tk.FLAT,
+            bd=5,
+            state=tk.DISABLED
+        )
+        self.stats_text.pack(padx=10, pady=10, fill=tk.BOTH)
+        
