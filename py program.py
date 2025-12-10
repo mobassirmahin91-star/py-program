@@ -770,3 +770,44 @@ Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
                 messagebox.showinfo("Success", f"Results exported to {filename}")
         
         elif format_type == 'csv':
+               # Export as CSV
+            filename = filedialog.asksaveasfilename(
+                defaultextension=".csv",
+                filetypes=[("CSV files", "*.csv"), ("All files", "*.*")]
+            )
+            if filename:
+                with open(filename, 'w', newline='') as f:
+                    writer = csv.DictWriter(f, fieldnames=['port', 'service', 'risk', 'tip'])
+                    writer.writeheader()
+                    writer.writerows(self.scan_results)
+                messagebox.showinfo("Success", f"Results exported to {filename}")
+    
+    def clear_results(self):
+        """
+        Clear all scan results and reset statistics display
+        Removes all entries from results table and stats text
+        """
+        self.scan_results = []
+        for item in self.results_tree.get_children():
+            self.results_tree.delete(item)
+        
+        self.stats_text.config(state=tk.NORMAL)
+        self.stats_text.delete(1.0, tk.END)
+        self.stats_text.config(state=tk.DISABLED)
+        
+        self.export_button.config(state=tk.DISABLED)
+        self.status_label.config(text="Ready to scan")
+
+
+def main():
+    """
+    Main entry point - creates root window and launches GUI
+    https://docs.python.org/3/library/tkinter.html#tkinter.mainloop
+    """
+    root = tk.Tk()
+    app = PortScannerGUI(root)
+    root.mainloop()
+
+
+if __name__ == "__main__":
+    main()
