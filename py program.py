@@ -664,7 +664,109 @@ Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
         Real-time search triggered by KeyRelease event
         """
         search_term = self.search_entry.get().lower()
+
+           # Clear current display
+        for item in self.results_tree.get_children():
+            self.results_tree.delete(item)
+        
+        # Re-populate with matching results
+        for result in self.scan_results:
+            if (search_term in str(result['port']) or 
+                search_term in result['service'].lower() or 
+                search_term in result['risk'].lower()):
+                self.add_result_to_tree(result)
     
+    def sort_results(self):
+        """
+        Sort results table by selected criterion (port, service, or risk)
+        Updates display after sorting internal results list
+        """
+        sort_by = self.sort_var.get()
         
-         
+        if sort_by == "port":
+            self.scan_results.sort(key=lambda x: x['port'])
+        elif sort_by == "service":
+            self.scan_results.sort(key=lambda x: x['service'])
+        elif sort_by == "risk":
+            risk_order = {'CRITICAL': 0, 'HIGH': 1, 'MEDIUM': 2, 'LOW': 3, 'UNKNOWN': 4}
+            self.scan_results.sort(key=lambda x: risk_order.get(x['risk'], 4))
         
+        # Refresh display
+        for item in self.results_tree.get_children():
+            self.results_tree.delete(item)
+        
+        for result in self.scan_results:
+            self.add_result_to_tree(result)
+    
+    def show_export_menu(self):
+        """
+        Display export format selection dialog
+        Creates popup window with JSON and CSV export options
+        https://docs.python.org/3/library/tkinter.html#tkinter.Toplevel
+        """
+        export_window = tk.Toplevel(self.root)
+        export_window.title("Export Results")
+        export_window.geometry("300x150")
+        export_window.configure(bg=self.colors['bg'])
+        export_window.resizable(False, False)
+        
+        tk.Label(
+            export_window,
+            text="Choose Export Format:",
+            bg=self.colors['bg'],
+            fg=self.colors['fg'],
+            font=("Helvetica", 12, "bold")
+        ).pack(pady=20)
+        
+        button_frame = tk.Frame(export_window, bg=self.colors['bg'])
+        button_frame.pack(pady=10)
+        
+        tk.Button(
+            button_frame,
+            text="📄 JSON",
+            command=lambda: [self.export_results('json'), export_window.destroy()],
+            font=("Helvetica", 10, "bold"),
+            bg=self.colors['button'],
+            fg='#1e1e2e',
+            relief=tk.FLAT,
+            padx=15,
+            pady=8,
+            cursor="hand2"
+        ).pack(side=tk.LEFT, padx=5)
+        
+        tk.Button(
+            button_frame,
+            text="📊 CSV",
+            command=lambda: [self.export_results('csv'), export_window.destroy()],
+            font=("Helvetica", 10, "bold"),
+            bg=self.colors['low'],
+            fg='#1e1e2e',
+            relief=tk.FLAT,
+            padx=15,
+            pady=8,
+            cursor="hand2"
+        ).pack(side=tk.LEFT, padx=5)
+    
+    def export_results(self, format_type):
+        """
+        Export scan results to file (JSON or CSV format)
+        Opens file dialog and writes results to selected file
+        https://docs.python.org/3/library/json.html
+        https://docs.python.org/3/library/csv.html
+        """
+        if not self.scan_results:
+            messagebox.showwarning("No Data", "No scan results to export!")
+            return
+        
+        if format_type == 'json':
+            # Export as JSON
+            filename = filedialog.asksaveasfilename(
+                defaultextension=".json",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+            )
+            if filename:
+                with open(filename, 'w') as f:
+                    json.dump(self.scan_results, f, indent=4)
+                messagebox.showinfo("Success", f"Results exported to {filename}")
+        
+        elif format_type == 'csv':
